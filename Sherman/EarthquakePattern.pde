@@ -94,7 +94,7 @@ public class EarthquakeMap {
   }
 }
 
-public class EarthquakePattern extends Pattern {
+public class EarthquakePattern extends TSPattern {
 
   private final EarthquakeMap earthquakeMap;
 
@@ -134,7 +134,7 @@ public class MapWindowRatio extends UIWindow {
   final static int WIDTH = (int)(HEIGHT * Model.XY_DISTANCE_RATIO * Model.NUM_LEDS_X / Model.NUM_LEDS_Y);
 
   MapWindowRatio(UI ui, EarthquakeMap earthquakeMap) {
-    super(ui, "", Sherman.this.width / 2 - WIDTH / 2, Sherman.this.height - HEIGHT - 50, WIDTH + 2, HEIGHT + 2);
+    super(ui, "", Sherman.this.width / 2 - WIDTH / 2, 10, WIDTH + 2, HEIGHT + 2);
     this.earthquakeMap = earthquakeMap;
 
     MapUIImage mapUIImage = new MapUIImage(1, 1, WIDTH, HEIGHT, earthquakeMap);

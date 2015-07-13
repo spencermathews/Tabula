@@ -14,7 +14,7 @@ public class SimulatorCamera extends UI3dContext {
   protected void beforeDraw(UI ui, PGraphics pg) {
     hint(ENABLE_DEPTH_TEST);
     pushMatrix();
-    translate(0, -10*Model.FEET, 0);
+    translate(0, -20*Model.FEET - Model.LED_START_Y, 0);
   }
 
   protected void afterDraw(UI ui, PGraphics pg) {
