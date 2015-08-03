@@ -81,7 +81,7 @@ class UILoopRecorder extends UIWindow {
     });
     listener.onParameterChanged(null);
 
-    slotLabel.setLabel(labels[automationSlot.getValuei()] = "Burning Man Playlist.json");
+    // slotLabel.setLabel(labels[automationSlot.getValuei()] = "Burning Man Playlist.json");
   }
 
   public void saveSet(File file) {

@@ -618,9 +618,9 @@ abstract class Engine {
       });
     }
 
-    String filename = "Burning Man Playlist.json";
-    JsonArray jsonArr = loadSavedSetFile(filename);
-    automation[automationSlot.getValuei()].loadJson(jsonArr);
+    // String filename = "Burning Man Playlist.json";
+    // JsonArray jsonArr = loadSavedSetFile(filename);
+    // automation[automationSlot.getValuei()].loadJson(jsonArr);
     // slotLabel.setLabel(labels[automationSlot.getValuei()] = filename);
     automation[automationSlot.getValuei()].looping.setValue(true);
     engineController.automation = automation[automationSlot.getValuei()];
