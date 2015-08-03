@@ -403,6 +403,19 @@ abstract class Engine {
         } catch (IOException ioe) { }
       }
     }
+    try {
+      reader = new BufferedReader(new FileReader(sketchPath(filename)));
+      return new Gson().fromJson(reader, typeToken);
+    } catch (IOException ioe) { 
+      System.out.println("Error reading json file: ");
+      System.out.println(ioe);
+    } finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException ioe) { }
+      }
+    }
     return null;
   }
 
@@ -605,7 +618,7 @@ abstract class Engine {
       });
     }
 
-    String filename = "data/Burning Man Playlist.json";
+    String filename = "Burning Man Playlist.json";
     JsonArray jsonArr = loadSavedSetFile(filename);
     automation[automationSlot.getValuei()].loadJson(jsonArr);
     // slotLabel.setLabel(labels[automationSlot.getValuei()] = filename);

@@ -8,7 +8,7 @@ class UILoopRecorder extends UIWindow {
   private final String[] labels = new String[] { "-", "-", "-", "-" };
   
   UILoopRecorder(UI ui) {
-    super(ui, "LOOP RECORDER", Sherman.this.width-144, Sherman.this.height - 126, 140, 122);
+    super(ui, "LOOP RECORDER", Tabula.this.width-144, Tabula.this.height - 126, 140, 122);
     float yPos = TITLE_LABEL_HEIGHT;
     
     final UIButton playButton = new UIButton(6, yPos, 40, 20);
@@ -114,7 +114,7 @@ class UIChannelFaders extends UI2dContext {
   final static int PERF_PADDING = PADDING + 1;
   
   UIChannelFaders(final UI ui) {
-    super(ui, Sherman.this.width/2-WIDTH/2, Sherman.this.height-HEIGHT-PADDING, WIDTH, HEIGHT);
+    super(ui, Tabula.this.width/2-WIDTH/2, Tabula.this.height-HEIGHT-PADDING, WIDTH, HEIGHT);
     setBackgroundColor(#292929);
     setBorderColor(#444444);
     int di = 0;
@@ -378,7 +378,7 @@ class UIMultiDeck extends UIWindow implements InterfaceController {
   final UIKnob[] knobs;
 
   public UIMultiDeck(UI ui) {
-    super(ui, "CHANNEL " + (focusedChannel()+1), Sherman.this.width - 4 - DEFAULT_WIDTH, Sherman.this.height - 128 - DEFAULT_HEIGHT, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    super(ui, "CHANNEL " + (focusedChannel()+1), Tabula.this.width - 4 - DEFAULT_WIDTH, Tabula.this.height - 128 - DEFAULT_HEIGHT, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     int yp = TITLE_LABEL_HEIGHT;
 
     patternLists = new UIItemList[Engine.NUM_CHANNELS];
@@ -550,7 +550,7 @@ class UIEffects extends UIWindow {
   final int KNOBS_PER_ROW = 4;
   
   UIEffects(UI ui, LXListenableNormalizedParameter[] effectKnobParameters) {
-    super(ui, "MASTER EFFECTS", Sherman.this.width-144, 110, 140, 120);
+    super(ui, "MASTER EFFECTS", Tabula.this.width-144, 110, 140, 120);
     
     int yp = TITLE_LABEL_HEIGHT;
     for (int ki = 0; ki < 8; ++ki) {

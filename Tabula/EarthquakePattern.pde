@@ -118,7 +118,7 @@ public class MapWindow extends UIWindow {
   final static int WIDTH = 2 * HEIGHT;
 
   MapWindow(UI ui, EarthquakeMap earthquakeMap) {
-    super(ui, "", Sherman.this.width / 2 - WIDTH / 2, 50, WIDTH + 2, HEIGHT + 2);
+    super(ui, "", Tabula.this.width / 2 - WIDTH / 2, 50, WIDTH + 2, HEIGHT + 2);
     this.earthquakeMap = earthquakeMap;
 
     MapUIImage mapUIImage = new MapUIImage(1, 1, WIDTH, HEIGHT, earthquakeMap);
@@ -134,7 +134,7 @@ public class MapWindowRatio extends UIWindow {
   final static int WIDTH = (int)(HEIGHT * Model.XY_DISTANCE_RATIO * Model.NUM_LEDS_X / Model.NUM_LEDS_Y);
 
   MapWindowRatio(UI ui, EarthquakeMap earthquakeMap) {
-    super(ui, "", Sherman.this.width / 2 - WIDTH / 2, 10, WIDTH + 2, HEIGHT + 2);
+    super(ui, "", Tabula.this.width / 2 - WIDTH / 2, 10, WIDTH + 2, HEIGHT + 2);
     this.earthquakeMap = earthquakeMap;
 
     MapUIImage mapUIImage = new MapUIImage(1, 1, WIDTH, HEIGHT, earthquakeMap);
@@ -261,7 +261,7 @@ public class WMSConnection {
     }
 
     GetMapRequest request = wms.createGetMapRequest();
-    request.setVendorSpecificParameter("map", "/Users/kyle/code/art/Sherman/EarthquakeMap.qgs");
+    request.setVendorSpecificParameter("map", "data/EarthquakeMap.qgs");
     request.setFormat("image/png");
     request.setDimensions(width, height);
     request.setTransparent(true);

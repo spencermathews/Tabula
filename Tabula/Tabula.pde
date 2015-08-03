@@ -58,7 +58,7 @@ void setup() {
   size(1148, 720, OPENGL);
   frameRate(90); // this will get processing 2 to actually hit around 60
   
-  engine = new ProcessingEngine(sketchPath);
+  engine = new ProcessingEngine(dataPath(""));
   engine.start();
 }
 
@@ -69,7 +69,7 @@ class ProcessingEngine extends Engine {
   }
 
   LX createLX() {
-    return new P2LX(Sherman.this, model);
+    return new P2LX(Tabula.this, model);
   }
 
   P2LX getLX() {
@@ -83,17 +83,17 @@ class ProcessingEngine extends Engine {
   void postCreateLX() {
     super.postCreateLX();
 
-    Sherman.this.model = model;
-    Sherman.this.lx = getLX();
-    Sherman.this.outputBrightness = outputBrightness;
-    Sherman.this.bpmTool = bpmTool;
-    Sherman.this.automation = automation;
-    Sherman.this.automationStop = automationStop; 
-    Sherman.this.automationSlot = automationSlot;
-    Sherman.this.effectKnobParameters = effectKnobParameters;
-    Sherman.this.previewChannels = previewChannels;
+    Tabula.this.model = model;
+    Tabula.this.lx = getLX();
+    Tabula.this.outputBrightness = outputBrightness;
+    Tabula.this.bpmTool = bpmTool;
+    Tabula.this.automation = automation;
+    Tabula.this.automationStop = automationStop; 
+    Tabula.this.automationSlot = automationSlot;
+    Tabula.this.effectKnobParameters = effectKnobParameters;
+    Tabula.this.previewChannels = previewChannels;
 
-    uiDeck = Sherman.this.uiDeck = new UIMultiDeck(Sherman.this.lx.ui);
+    uiDeck = Tabula.this.uiDeck = new UIMultiDeck(Tabula.this.lx.ui);
 
     configureUI();
   }
@@ -101,7 +101,7 @@ class ProcessingEngine extends Engine {
   void addPatterns(ArrayList<LXPattern> patterns) {
     patterns.add(new EarthquakePattern(lx, earthquakeMap));
     super.addPatterns(patterns);
-    try { patterns.add(new SyphonPattern(lx, Sherman.this)); } catch (Throwable e) {}
+    try { patterns.add(new SyphonPattern(lx, Tabula.this)); } catch (Throwable e) {}
   }
 }
 
@@ -140,7 +140,7 @@ void configureUI() {
   lx.ui.addLayer(new UIEffects(lx.ui, effectKnobParameters));
   lx.ui.addLayer(uiDeck);
   lx.ui.addLayer(new UILoopRecorder(lx.ui));
-  lx.ui.addLayer(new UIMasterBpm(lx.ui, Sherman.this.width-144, 4, bpmTool));
+  lx.ui.addLayer(new UIMasterBpm(lx.ui, Tabula.this.width-144, 4, bpmTool));
 }
 
 TreesTransition getFaderTransition(LXChannel channel) {

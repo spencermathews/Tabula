@@ -1,0 +1,10 @@
+{
+	"folders":
+	[
+		{
+			"path": "Tabula",
+			"folder_exclude_patterns": ["build-tmp", "javadoc", "code", "data", "application.macosx"],
+			"file_exclude_patterns": ["*.sh"]
+		}
+	]
+}

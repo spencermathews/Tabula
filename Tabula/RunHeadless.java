@@ -15,7 +15,7 @@ class RunHeadless {
     }
     String rootDirectory = args[0];
     
-    PureJavaEngine engine = new PureJavaEngine(rootDirectory);
+    PureJavaEngine engine = new PureJavaEngine(rootDirectory + "/data");
     engine.start();
   }
 }
