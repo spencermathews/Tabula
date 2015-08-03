@@ -51,7 +51,7 @@ BooleanParameter[] automationStop;
 DiscreteParameter automationSlot;
 LXListenableNormalizedParameter[] effectKnobParameters;
 BooleanParameter[] previewChannels;
-EarthquakeMap earthquakeMap;
+// EarthquakeMap earthquakeMap;
 
 
 void setup() {
@@ -77,7 +77,7 @@ class ProcessingEngine extends Engine {
   }
 
   void configureLX(LX lx) {
-    earthquakeMap = new EarthquakeMap(lx);
+    // earthquakeMap = new EarthquakeMap(lx);
   }
 
   void postCreateLX() {
@@ -99,7 +99,9 @@ class ProcessingEngine extends Engine {
   }
 
   void addPatterns(ArrayList<LXPattern> patterns) {
-    patterns.add(new EarthquakePattern(lx, earthquakeMap));
+    // patterns.add(new EarthquakePattern(lx, earthquakeMap));
+    patterns.add(new WorldMapPattern(lx));
+    patterns.add(new EarthquakeVisualizerPattern(lx));
     super.addPatterns(patterns);
     try { patterns.add(new SyphonPattern(lx, Tabula.this)); } catch (Throwable e) {}
   }
@@ -134,7 +136,7 @@ void configureUI() {
 
   lx.ui.addLayer(new SimulatorCamera(lx, lx.ui));
   // lx.ui.addLayer(new MapWindow(lx.ui, earthquakeMap));
-  lx.ui.addLayer(new MapWindowRatio(lx.ui, earthquakeMap));
+  // lx.ui.addLayer(new MapWindowRatio(lx.ui, earthquakeMap));
 
   lx.ui.addLayer(uiFaders = new UIChannelFaders(lx.ui));
   lx.ui.addLayer(new UIEffects(lx.ui, effectKnobParameters));

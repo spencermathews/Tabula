@@ -1,4 +1,4 @@
-public class EarthquakeMap {
+public class WorldMap {
 
   static final int IMAGE_WIDTH = 600;
   static final int IMAGE_HEIGHT = 300;
@@ -7,33 +7,15 @@ public class EarthquakeMap {
 
   private final SawLFO rotation = new SawLFO(Model.RECT_THETA_MAX, 0, 60000);
 
-  private static final int PULSE_SPEED = 5000;
-  private final QuadraticEnvelope pulseRadius = new QuadraticEnvelope(0, 20, PULSE_SPEED);
-  private final QuadraticEnvelope pulseAlpha = new QuadraticEnvelope(1, 0, PULSE_SPEED);
-  
-  private static final int outerFade = 10;
-  private static final int innerFade = 5;
-  private static final int dotFade = 10;
-
   public PImage mapImage;
-  public List<Earthquake> earthquakes = new ArrayList<Earthquake>();
 
-  EarthquakeMap(LX lx) {
+  WorldMap(LX lx) {
     this.lx = lx;
 
-    pulseRadius.setEase(QuadraticEnvelope.Ease.OUT);
-    pulseRadius.setLooping(true);
-
-    pulseAlpha.setEase(QuadraticEnvelope.Ease.OUT);
-    pulseAlpha.setLooping(true);
-
     lx.addModulator(rotation).start();
-    lx.addModulator(pulseRadius).start();
-    lx.addModulator(pulseAlpha).start();
 
     WMSConnection wmsConnection = new WMSConnection();
     mapImage = wmsConnection.getBlueMarbleImage(IMAGE_WIDTH, IMAGE_HEIGHT);
-    earthquakes = wmsConnection.getEarthquakes();
   }
 
   int getColorAtPixel(float rectTheta, float y) {
@@ -47,6 +29,49 @@ public class EarthquakeMap {
       int mapY = (int)(mapImage.height - ledRawY - 1);
       pixelColor = mapImage.get(mapX, mapY);
     }
+
+    return pixelColor;
+  }
+}
+
+public class EarthquakeVisualizer {
+
+  private final LX lx;
+
+  private final SawLFO rotation = new SawLFO(Model.RECT_THETA_MAX, 0, 60000);
+
+  private static final int PULSE_SPEED = 5000;
+  private final QuadraticEnvelope pulseRadius = new QuadraticEnvelope(0, 20, PULSE_SPEED);
+  private final QuadraticEnvelope pulseAlpha = new QuadraticEnvelope(1, 0, PULSE_SPEED);
+  
+  private static final int outerFade = 10;
+  private static final int innerFade = 5;
+  private static final int dotFade = 10;
+
+  public List<Earthquake> earthquakes = new ArrayList<Earthquake>();
+
+  EarthquakeVisualizer(LX lx) {
+    this.lx = lx;
+
+    pulseRadius.setEase(QuadraticEnvelope.Ease.OUT);
+    pulseRadius.setLooping(true);
+
+    pulseAlpha.setEase(QuadraticEnvelope.Ease.OUT);
+    pulseAlpha.setLooping(true);
+
+    lx.addModulator(rotation).start();
+    lx.addModulator(pulseRadius).start();
+    lx.addModulator(pulseAlpha).start();
+
+    WMSConnection wmsConnection = new WMSConnection();
+    earthquakes = wmsConnection.getEarthquakes();
+  }
+
+  int getColorAtPixel(float rectTheta, float y) {
+    float ledRectTheta = rectTheta + rotation.getValuef();
+    float ledRawY = y;
+
+    int pixelColor = LXColor.BLACK;
 
     float[] distances = new float[earthquakes.size()];
 
@@ -94,79 +119,95 @@ public class EarthquakeMap {
   }
 }
 
-public class EarthquakePattern extends TSPattern {
+public class WorldMapPattern extends TSPattern {
 
-  private final EarthquakeMap earthquakeMap;
+  private final WorldMap worldMap;
 
-  EarthquakePattern(LX lx, EarthquakeMap earthquakeMap) {
+  WorldMapPattern(LX lx) {
     super(lx);
-    this.earthquakeMap = earthquakeMap;
+    worldMap = new WorldMap(lx);
   }
 
   void run(double deltaMs) {
     for (LED led : model.leds) {
-      setColor(led.index, earthquakeMap.getColorAtPixel(led.rectTheta, led.rawY));
+      setColor(led.index, worldMap.getColorAtPixel(led.rectTheta, led.rawY));
     }
   }
 }
 
-public class MapWindow extends UIWindow {
+public class EarthquakeVisualizerPattern extends TSPattern {
 
-  private final EarthquakeMap earthquakeMap;
+  private final EarthquakeVisualizer earthquakeVisualizer;
 
-  final static int HEIGHT = 150;
-  final static int WIDTH = 2 * HEIGHT;
-
-  MapWindow(UI ui, EarthquakeMap earthquakeMap) {
-    super(ui, "", Tabula.this.width / 2 - WIDTH / 2, 50, WIDTH + 2, HEIGHT + 2);
-    this.earthquakeMap = earthquakeMap;
-
-    MapUIImage mapUIImage = new MapUIImage(1, 1, WIDTH, HEIGHT, earthquakeMap);
-    mapUIImage.addToContainer(this);
-  }
-}
-
-public class MapWindowRatio extends UIWindow {
-
-  private final EarthquakeMap earthquakeMap;
-
-  final static int HEIGHT = 100;
-  final static int WIDTH = (int)(HEIGHT * Model.XY_DISTANCE_RATIO * Model.NUM_LEDS_X / Model.NUM_LEDS_Y);
-
-  MapWindowRatio(UI ui, EarthquakeMap earthquakeMap) {
-    super(ui, "", Tabula.this.width / 2 - WIDTH / 2, 10, WIDTH + 2, HEIGHT + 2);
-    this.earthquakeMap = earthquakeMap;
-
-    MapUIImage mapUIImage = new MapUIImage(1, 1, WIDTH, HEIGHT, earthquakeMap);
-    mapUIImage.addToContainer(this);
-  }
-}
-
-public class MapUIImage extends UI2dComponent {
-
-  private final EarthquakeMap earthquakeMap;
-  private PImage pImage;
-
-  MapUIImage(int x, int y, int width, int height, EarthquakeMap earthquakeMap) {
-    super(x, y, width, height);
-    this.earthquakeMap = earthquakeMap;
+  EarthquakeVisualizerPattern(LX lx) {
+    super(lx);
+    earthquakeVisualizer = new EarthquakeVisualizer(lx);
   }
 
-  @Override
-  public void onDraw(UI ui, PGraphics pg) {
-    pg.loadPixels();
-    for (int i = (int)x; i < width + x; ++i) {
-      for (int j = (int)y; j < height + y; ++j) {
-        float rectTheta = map(i, 0, width, 0, Model.RECT_THETA_MAX);
-        float rawY = map(height - j - 1, 0, height, 0, EarthquakeMap.IMAGE_HEIGHT);
-        pg.pixels[i + j * (int)pg.width] = earthquakeMap.getColorAtPixel(rectTheta, rawY);
-      }
+  void run(double deltaMs) {
+    for (LED led : model.leds) {
+      setColor(led.index, earthquakeVisualizer.getColorAtPixel(led.rectTheta, led.rawY));
     }
-    pg.updatePixels();
-
-    redraw();
   }
 }
+
+// public class MapWindow extends UIWindow {
+
+//   private final EarthquakeMap earthquakeMap;
+
+//   final static int HEIGHT = 150;
+//   final static int WIDTH = 2 * HEIGHT;
+
+//   MapWindow(UI ui, EarthquakeMap earthquakeMap) {
+//     super(ui, "", Tabula.this.width / 2 - WIDTH / 2, 50, WIDTH + 2, HEIGHT + 2);
+//     this.earthquakeMap = earthquakeMap;
+
+//     MapUIImage mapUIImage = new MapUIImage(1, 1, WIDTH, HEIGHT, earthquakeMap);
+//     mapUIImage.addToContainer(this);
+//   }
+// }
+
+// public class MapWindowRatio extends UIWindow {
+
+//   private final EarthquakeMap earthquakeMap;
+
+//   final static int HEIGHT = 100;
+//   final static int WIDTH = (int)(HEIGHT * Model.XY_DISTANCE_RATIO * Model.NUM_LEDS_X / Model.NUM_LEDS_Y);
+
+//   MapWindowRatio(UI ui, EarthquakeMap earthquakeMap) {
+//     super(ui, "", Tabula.this.width / 2 - WIDTH / 2, 10, WIDTH + 2, HEIGHT + 2);
+//     this.earthquakeMap = earthquakeMap;
+
+//     MapUIImage mapUIImage = new MapUIImage(1, 1, WIDTH, HEIGHT, earthquakeMap);
+//     mapUIImage.addToContainer(this);
+//   }
+// }
+
+// public class MapUIImage extends UI2dComponent {
+
+//   private final EarthquakeMap earthquakeMap;
+//   private PImage pImage;
+
+//   MapUIImage(int x, int y, int width, int height, EarthquakeMap earthquakeMap) {
+//     super(x, y, width, height);
+//     this.earthquakeMap = earthquakeMap;
+//   }
+
+//   @Override
+//   public void onDraw(UI ui, PGraphics pg) {
+//     pg.loadPixels();
+//     for (int i = (int)x; i < width + x; ++i) {
+//       for (int j = (int)y; j < height + y; ++j) {
+//         float rectTheta = map(i, 0, width, 0, Model.RECT_THETA_MAX);
+//         float rawY = map(height - j - 1, 0, height, 0, EarthquakeMap.IMAGE_HEIGHT);
+//         pg.pixels[i + j * (int)pg.width] = earthquakeMap.getColorAtPixel(rectTheta, rawY);
+//       }
+//     }
+//     pg.updatePixels();
+
+//     redraw();
+//   }
+// }
 
 public class WMSConnection {
 
