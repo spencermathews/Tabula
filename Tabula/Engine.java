@@ -95,8 +95,8 @@ abstract class Engine {
     if (enableAPC40) {
       configureMIDI();
     }
+    engineController.setAutoplay(autoplayBMSet, enableIPad);
     if (enableIPad) {
-      engineController.setAutoplay(autoplayBMSet, true);
       configureServer();
     }
     
@@ -234,7 +234,7 @@ abstract class Engine {
     patterns.add(new Wedges(lx));
 
     patterns.add(new MarkLottor(lx));
-    patterns.add(new IceCrystals(lx));
+    // patterns.add(new IceCrystals(lx));
     patterns.add(new Fire(lx));
     patterns.add(new Fumes(lx));
     patterns.add(new Voronoi(lx));
@@ -307,51 +307,12 @@ abstract class Engine {
     registerOneShot(new Explosions(lx), "3707000050ab6a", 5);
   }
 
-  void registerEffectTriggerables() {
+  void registerEffectTriggerables(boolean registerAll) {
     BlurEffect blurEffect = new TSBlurEffect(lx);
     ColorEffect colorEffect = new ColorEffect(lx);
-    GhostEffect ghostEffect = new GhostEffect(lx);
-    ScrambleEffect scrambleEffect = new ScrambleEffect(lx);
-    StaticEffect staticEffect = new StaticEffect(lx);
-    RotationEffect rotationEffect = new RotationEffect(lx);
     SpinEffect spinEffect = new SpinEffect(lx);
     SpeedEffect speedEffect = new SpeedEffect(lx);
-    ColorStrobeTextureEffect colorStrobeTextureEffect = new ColorStrobeTextureEffect(lx);
-    FadeTextureEffect fadeTextureEffect = new FadeTextureEffect(lx);
-    AcidTripTextureEffect acidTripTextureEffect = new AcidTripTextureEffect(lx);
-    CandyTextureEffect candyTextureEffect = new CandyTextureEffect(lx);
     CandyCloudTextureEffect candyCloudTextureEffect = new CandyCloudTextureEffect(lx);
-
-    lx.addEffect(blurEffect);
-    lx.addEffect(colorEffect);
-    lx.addEffect(ghostEffect);
-    lx.addEffect(scrambleEffect);
-    lx.addEffect(staticEffect);
-    lx.addEffect(rotationEffect);
-    lx.addEffect(spinEffect);
-    lx.addEffect(speedEffect);
-    lx.addEffect(colorStrobeTextureEffect);
-    lx.addEffect(fadeTextureEffect);
-    lx.addEffect(acidTripTextureEffect);
-    lx.addEffect(candyTextureEffect);
-    lx.addEffect(candyCloudTextureEffect);
-
-    registerEffectControlParameter(speedEffect.speed, "3707000050abae", 1, 0.4);
-    registerEffectControlParameter(speedEffect.speed, "3707000050a916", 1, 5);
-    registerEffectControlParameter(colorEffect.rainbow, "3707000050a98f");
-    registerEffectControlParameter(colorEffect.mono, "3707000050aafe");
-    registerEffectControlParameter(colorEffect.desaturation, "3707000050a969");
-    registerEffectControlParameter(colorEffect.sharp, "3707000050aafc");
-    registerEffectControlParameter(blurEffect.amount, "3707000050a973", 0.65);
-    registerEffectControlParameter(spinEffect.spin, "3707000050ab2c", 0.65);
-    registerEffectControlParameter(ghostEffect.amount, "3707000050aaf2", 0, 0.16, 1);
-    registerEffectControlParameter(scrambleEffect.amount, "3707000050a8cc", 0, 1, 1);
-    registerEffectControlParameter(colorStrobeTextureEffect.amount, "3707000050a946", 0, 1, 1);
-    registerEffectControlParameter(fadeTextureEffect.amount, "3707000050a967", 0, 1, 1);
-    registerEffectControlParameter(acidTripTextureEffect.amount, "3707000050a953", 0, 1, 1);
-    registerEffectControlParameter(candyCloudTextureEffect.amount, "3707000050a92d", 0, 1, 1);
-    registerEffectControlParameter(staticEffect.amount, "3707000050a8b3", 0, .3, 1);
-    registerEffectControlParameter(candyTextureEffect.amount, "3707000050aafc", 0, 1, 5);
 
     effectKnobParameters = new LXListenableNormalizedParameter[] {
       colorEffect.hueShift,
@@ -363,6 +324,53 @@ abstract class Engine {
       spinEffect.spin,
       candyCloudTextureEffect.amount
     };
+
+    lx.addEffect(blurEffect);
+    lx.addEffect(colorEffect);
+    lx.addEffect(speedEffect);
+    lx.addEffect(spinEffect);
+    lx.addEffect(candyCloudTextureEffect);
+
+    if (registerAll) {
+      GhostEffect ghostEffect = new GhostEffect(lx);
+      ScrambleEffect scrambleEffect = new ScrambleEffect(lx);
+      StaticEffect staticEffect = new StaticEffect(lx);
+      RotationEffect rotationEffect = new RotationEffect(lx);
+      ColorStrobeTextureEffect colorStrobeTextureEffect = new ColorStrobeTextureEffect(lx);
+      FadeTextureEffect fadeTextureEffect = new FadeTextureEffect(lx);
+      AcidTripTextureEffect acidTripTextureEffect = new AcidTripTextureEffect(lx);
+      CandyTextureEffect candyTextureEffect = new CandyTextureEffect(lx);
+
+      lx.addEffect(ghostEffect);
+      lx.addEffect(scrambleEffect);
+      lx.addEffect(staticEffect);
+      lx.addEffect(rotationEffect);
+      lx.addEffect(colorStrobeTextureEffect);
+      lx.addEffect(fadeTextureEffect);
+      lx.addEffect(acidTripTextureEffect);
+      lx.addEffect(candyTextureEffect);
+
+      registerEffectControlParameter(speedEffect.speed, "3707000050abae", 1, 0.4);
+      registerEffectControlParameter(speedEffect.speed, "3707000050a916", 1, 5);
+      registerEffectControlParameter(colorEffect.rainbow, "3707000050a98f");
+      registerEffectControlParameter(colorEffect.mono, "3707000050aafe");
+      registerEffectControlParameter(colorEffect.desaturation, "3707000050a969");
+      registerEffectControlParameter(colorEffect.sharp, "3707000050aafc");
+      registerEffectControlParameter(blurEffect.amount, "3707000050a973", 0.65);
+      registerEffectControlParameter(spinEffect.spin, "3707000050ab2c", 0.65);
+      registerEffectControlParameter(ghostEffect.amount, "3707000050aaf2", 0, 0.16, 1);
+      registerEffectControlParameter(scrambleEffect.amount, "3707000050a8cc", 0, 1, 1);
+      registerEffectControlParameter(colorStrobeTextureEffect.amount, "3707000050a946", 0, 1, 1);
+      registerEffectControlParameter(fadeTextureEffect.amount, "3707000050a967", 0, 1, 1);
+      registerEffectControlParameter(acidTripTextureEffect.amount, "3707000050a953", 0, 1, 1);
+      registerEffectControlParameter(candyCloudTextureEffect.amount, "3707000050a92d", 0, 1, 1);
+      registerEffectControlParameter(staticEffect.amount, "3707000050a8b3", 0, .3, 1);
+      registerEffectControlParameter(candyTextureEffect.amount, "3707000050aafc", 0, 1, 5);
+    }
+
+    for (LXEffect effect : lx.getEffects()) {
+      effect.enable();
+    }
   }
 
   VisualType[] readerPatternTypeRestrictions() {
@@ -648,9 +656,11 @@ abstract class Engine {
       };
     }
 
-    registerPatternTriggerables();
-    registerOneShotTriggerables();
-    registerEffectTriggerables();
+    if (apc40Drumpad != null || enableIPad) {
+      registerPatternTriggerables();
+      registerOneShotTriggerables();
+    }
+    registerEffectTriggerables(apc40Drumpad != null || enableIPad);
 
     if (enableIPad) {
       engineController.startEffectIndex = lx.engine.getEffects().size();

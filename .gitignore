@@ -2,3 +2,4 @@
 build-tmp/
 sketch.properties
 application.macosx
+*.sublime-workspace

@@ -139,6 +139,7 @@ class LED extends LXModel {
   public final int rawY;
 
   public float transformedY;
+  public float transformedRectTheta;
   public float transformedTheta;
   public Vec2D transformedCylinderPoint;
 
@@ -156,6 +157,7 @@ class LED extends LXModel {
   }
 
   void resetTransform() {
+    transformedRectTheta = rectTheta;
     transformedTheta = rectThetaNormalized;
     transformedY = y;
   }

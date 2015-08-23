@@ -103,7 +103,7 @@ class ProcessingEngine extends Engine {
     patterns.add(new WorldMapPattern(lx));
     patterns.add(new EarthquakeVisualizerPattern(lx));
     super.addPatterns(patterns);
-    try { patterns.add(new SyphonPattern(lx, Tabula.this)); } catch (Throwable e) {}
+    // try { patterns.add(new SyphonPattern(lx, Tabula.this)); } catch (Throwable e) {}
   }
 }
 

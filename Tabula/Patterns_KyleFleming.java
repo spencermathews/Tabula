@@ -990,29 +990,42 @@ class RotationEffect extends ModelTransform {
 
 class SpinEffect extends ModelTransform {
   
-  final BasicParameter spin = new BasicParameter("SPIN");
+  final BasicParameter spin = new BasicParameter("SPIN", 0.5);
   final FunctionalParameter rotationPeriodMs = new FunctionalParameter() {
     public double getValue() {
-      return 5000 - 4800 * spin.getValue();
+      return 119000 - 118000 * spin.getValue();
     }
   };
-  final SawLFO rotation = new SawLFO(0, 360, rotationPeriodMs);
+  final SawLFO rotation = new SawLFO(360, 0, rotationPeriodMs);
+  private final SawLFO rotationRectTheta = new SawLFO(Model.RECT_THETA_MAX, 0, rotationPeriodMs);
 
   SpinEffect(LX lx) {
     super(lx);
 
     addModulator(rotation);
+    addModulator(rotationRectTheta);
 
     spin.addListener(new LXParameterListener() {
       public void onParameterChanged(LXParameter parameter) {
         if (spin.getValue() > 0) {
           rotation.start();
           rotation.setLooping(true);
+          rotationRectTheta.start();
+          rotationRectTheta.setLooping(true);
         } else {
-          rotation.setLooping(false);
+          rotation.stop();
+          rotationRectTheta.stop();
+          // rotation.setLooping(false);
+          // rotationRectTheta.setLooping(false);
         }
       }
     });
+    if (spin.getValue() > 0) {
+      rotation.start();
+      rotation.setLooping(true);
+      rotationRectTheta.start();
+      rotationRectTheta.setLooping(true);
+    }
   }
 
   void transform(Model model) {
@@ -1020,6 +1033,12 @@ class SpinEffect extends ModelTransform {
       float rotationTheta = rotation.getValuef();
       for (LED led : model.leds) {
         led.transformedTheta = (led.transformedTheta + 360 - rotationTheta) % 360;
+      }
+    }
+    if (rotationRectTheta.getValue() > 0 && rotationRectTheta.getValue() < Model.RECT_THETA_MAX) {
+      float rotationTheta = rotationRectTheta.getValuef();
+      for (LED led : model.leds) {
+        led.transformedRectTheta = (led.transformedRectTheta + rotationTheta) % Model.RECT_THETA_MAX;
       }
     }
   }

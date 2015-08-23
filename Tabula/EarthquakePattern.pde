@@ -1,25 +1,18 @@
-public class WorldMap {
+public abstract class WorldMap {
 
   static final int IMAGE_WIDTH = 600;
   static final int IMAGE_HEIGHT = 300;
 
   private final LX lx;
 
-  private final SawLFO rotation = new SawLFO(Model.RECT_THETA_MAX, 0, 60000);
-
-  public PImage mapImage;
+  protected PImage mapImage;
 
   WorldMap(LX lx) {
     this.lx = lx;
-
-    lx.addModulator(rotation).start();
-
-    WMSConnection wmsConnection = new WMSConnection();
-    mapImage = wmsConnection.getBlueMarbleImage(IMAGE_WIDTH, IMAGE_HEIGHT);
   }
 
   int getColorAtPixel(float rectTheta, float y) {
-    float ledRectTheta = rectTheta + rotation.getValuef();
+    float ledRectTheta = rectTheta;
     float ledRawY = y;
 
     int pixelColor = LXColor.BLACK;
@@ -34,11 +27,24 @@ public class WorldMap {
   }
 }
 
+public class BlueMarbleWorldMap extends WorldMap {
+  BlueMarbleWorldMap(LX lx) {
+    super(lx);
+    WMSConnection wmsConnection = new WMSConnection();
+    mapImage = wmsConnection.getBlueMarbleImage(IMAGE_WIDTH, IMAGE_HEIGHT);
+  }
+}
+
+public class ImageWorldMap extends WorldMap {
+  ImageWorldMap(LX lx, int index) {
+    super(lx);
+    mapImage = loadImage("map" + index + ".png");
+  }
+}
+
 public class EarthquakeVisualizer {
 
   private final LX lx;
-
-  private final SawLFO rotation = new SawLFO(Model.RECT_THETA_MAX, 0, 60000);
 
   private static final int PULSE_SPEED = 5000;
   private final QuadraticEnvelope pulseRadius = new QuadraticEnvelope(0, 20, PULSE_SPEED);
@@ -59,7 +65,6 @@ public class EarthquakeVisualizer {
     pulseAlpha.setEase(QuadraticEnvelope.Ease.OUT);
     pulseAlpha.setLooping(true);
 
-    lx.addModulator(rotation).start();
     lx.addModulator(pulseRadius).start();
     lx.addModulator(pulseAlpha).start();
 
@@ -68,7 +73,7 @@ public class EarthquakeVisualizer {
   }
 
   int getColorAtPixel(float rectTheta, float y) {
-    float ledRectTheta = rectTheta + rotation.getValuef();
+    float ledRectTheta = rectTheta;
     float ledRawY = y;
 
     int pixelColor = LXColor.BLACK;
@@ -119,34 +124,51 @@ public class EarthquakeVisualizer {
   }
 }
 
+
+static final int NUM_MAPS = 16;
+final WorldMap[] worldMaps = new WorldMap[NUM_MAPS];
+
 public class WorldMapPattern extends TSPattern {
 
-  private final WorldMap worldMap;
+  final DiscreteParameter mapIndex = new DiscreteParameter("MAP #", 0, 0, NUM_MAPS-1);
 
   WorldMapPattern(LX lx) {
     super(lx);
-    worldMap = new WorldMap(lx);
+
+    addParameter(mapIndex);
+
+    if (worldMaps[0] == null) {
+      worldMaps[0] = new BlueMarbleWorldMap(lx);
+
+      for (int i = 1; i < NUM_MAPS; i++) {
+        worldMaps[i] = new ImageWorldMap(lx, i);
+      }
+    }
   }
 
   void run(double deltaMs) {
     for (LED led : model.leds) {
-      setColor(led.index, worldMap.getColorAtPixel(led.rectTheta, led.rawY));
+      if (worldMaps[mapIndex.getValuei()] != null) {
+        setColor(led.index, worldMaps[mapIndex.getValuei()].getColorAtPixel(led.transformedRectTheta, led.rawY));
+      }
     }
   }
 }
 
-public class EarthquakeVisualizerPattern extends TSPattern {
+static EarthquakeVisualizer earthquakeVisualizer;
 
-  private final EarthquakeVisualizer earthquakeVisualizer;
+public class EarthquakeVisualizerPattern extends TSPattern {
 
   EarthquakeVisualizerPattern(LX lx) {
     super(lx);
-    earthquakeVisualizer = new EarthquakeVisualizer(lx);
+    if (earthquakeVisualizer == null) {
+      earthquakeVisualizer = new EarthquakeVisualizer(lx);
+    }
   }
 
   void run(double deltaMs) {
     for (LED led : model.leds) {
-      setColor(led.index, earthquakeVisualizer.getColorAtPixel(led.rectTheta, led.rawY));
+      setColor(led.index, earthquakeVisualizer.getColorAtPixel(led.transformedRectTheta, led.rawY));
     }
   }
 }
