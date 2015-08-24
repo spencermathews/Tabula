@@ -3,8 +3,9 @@ public abstract class WorldMap {
   static final int IMAGE_WIDTH = 600;
   static final int IMAGE_HEIGHT = 300;
 
-  private final LX lx;
+  protected final LX lx;
 
+  protected PImage originalImage;
   protected PImage mapImage;
 
   WorldMap(LX lx) {
@@ -12,18 +13,25 @@ public abstract class WorldMap {
   }
 
   int getColorAtPixel(float rectTheta, float y) {
-    float ledRectTheta = rectTheta;
-    float ledRawY = y;
-
     int pixelColor = LXColor.BLACK;
 
     if (mapImage != null) {
-      int mapX = (int)map(ledRectTheta, 0, Model.RECT_THETA_MAX, 0, mapImage.width) % mapImage.width;
-      int mapY = (int)(mapImage.height - ledRawY - 1);
+      int mapX = (int)map(rectTheta, 0, Model.RECT_THETA_MAX, 0, mapImage.width) % mapImage.width;
+      int mapY = (int)(mapImage.height - y - 1);
       pixelColor = mapImage.get(mapX, mapY);
     }
 
     return pixelColor;
+  }
+
+  void setImage(PImage image) {
+    originalImage = image;
+    mapImage = originalImage.get();
+  }
+
+  void setBlur(int amount) {
+    mapImage = originalImage.get();
+    mapImage.filter(BLUR, amount);
   }
 }
 
@@ -31,111 +39,30 @@ public class BlueMarbleWorldMap extends WorldMap {
   BlueMarbleWorldMap(LX lx) {
     super(lx);
     WMSConnection wmsConnection = new WMSConnection();
-    mapImage = wmsConnection.getBlueMarbleImage(IMAGE_WIDTH, IMAGE_HEIGHT);
+    setImage(wmsConnection.getBlueMarbleImage(IMAGE_WIDTH, IMAGE_HEIGHT));
   }
 }
 
 public class ImageWorldMap extends WorldMap {
   ImageWorldMap(LX lx, int index) {
     super(lx);
-    mapImage = loadImage("map" + index + ".png");
+    setImage(loadImage("map" + index + ".png"));
   }
 }
-
-public class EarthquakeVisualizer {
-
-  private final LX lx;
-
-  private static final int PULSE_SPEED = 5000;
-  private final QuadraticEnvelope pulseRadius = new QuadraticEnvelope(0, 20, PULSE_SPEED);
-  private final QuadraticEnvelope pulseAlpha = new QuadraticEnvelope(1, 0, PULSE_SPEED);
-  
-  private static final int outerFade = 10;
-  private static final int innerFade = 5;
-  private static final int dotFade = 10;
-
-  public List<Earthquake> earthquakes = new ArrayList<Earthquake>();
-
-  EarthquakeVisualizer(LX lx) {
-    this.lx = lx;
-
-    pulseRadius.setEase(QuadraticEnvelope.Ease.OUT);
-    pulseRadius.setLooping(true);
-
-    pulseAlpha.setEase(QuadraticEnvelope.Ease.OUT);
-    pulseAlpha.setLooping(true);
-
-    lx.addModulator(pulseRadius).start();
-    lx.addModulator(pulseAlpha).start();
-
-    WMSConnection wmsConnection = new WMSConnection();
-    earthquakes = wmsConnection.getEarthquakes();
-  }
-
-  int getColorAtPixel(float rectTheta, float y) {
-    float ledRectTheta = rectTheta;
-    float ledRawY = y;
-
-    int pixelColor = LXColor.BLACK;
-
-    float[] distances = new float[earthquakes.size()];
-
-    for (int i = 0; i < earthquakes.size(); i++) {
-      Earthquake earthquake = earthquakes.get(i);
-      float earthquakeRectTheta = earthquake.rectTheta;
-      if (2 * (earthquakeRectTheta - ledRectTheta) > Model.RECT_THETA_MAX) {
-        earthquakeRectTheta -= Model.RECT_THETA_MAX;
-      } else if (2 * (ledRectTheta - earthquakeRectTheta) > Model.RECT_THETA_MAX) {
-        earthquakeRectTheta += Model.RECT_THETA_MAX;
-      }
-      float pulseRadiusOffset = max(earthquake.magnitude + dotFade, pulseRadius.getValuef() * earthquake.magnitude);
-      if (abs(earthquakeRectTheta - ledRectTheta) * Model.XY_DISTANCE_RATIO > pulseRadiusOffset
-        || abs(earthquake.rawY - ledRawY) > pulseRadiusOffset) {
-        distances[i] = 10000;
-        continue;
-      }
-      float distance = distances[i] = dist(earthquakeRectTheta * Model.XY_DISTANCE_RATIO, earthquake.rawY, ledRectTheta * Model.XY_DISTANCE_RATIO, ledRawY);
-
-      float pulseDistance = distance - (pulseRadius.getValuef() * earthquake.magnitude - outerFade);
-      float fadeValue;
-      if (pulseDistance >= 0) {
-        fadeValue = max(0, 1 - pulseDistance / outerFade);
-      } else {
-        fadeValue = max(0, 1 + pulseDistance / 100);
-      }
-      int adjustedFadeValue = (int)(100 * fadeValue * pulseAlpha.getValuef());
-      if (adjustedFadeValue > 0) {
-        pixelColor = LXColor.add(pixelColor, lx.hsb(100, 100, adjustedFadeValue));
-      }
-    }
-
-    for (int i = 0; i < earthquakes.size(); i++) {
-      Earthquake earthquake = earthquakes.get(i);
-      float distance = distances[i];
-      if (distance >= 10000) continue;
-
-      float progress = max(0, 1 - max(0, distance - earthquake.magnitude) / dotFade);
-      if (progress > 0) {
-        pixelColor = LXColor.lerp(pixelColor, LXColor.RED, progress);
-      }
-    }
-
-    return pixelColor;
-  }
-}
-
 
 static final int NUM_MAPS = 16;
-final WorldMap[] worldMaps = new WorldMap[NUM_MAPS];
+static final WorldMap[] worldMaps = new WorldMap[NUM_MAPS];
 
 public class WorldMapPattern extends TSPattern {
 
-  final DiscreteParameter mapIndex = new DiscreteParameter("MAP #", 0, 0, NUM_MAPS-1);
+  private final DiscreteParameter mapIndex = new DiscreteParameter("#", 0, 0, NUM_MAPS);
+  private final DiscreteParameter blur = new DiscreteParameter("BLUR", 0, 0, 10);
 
   WorldMapPattern(LX lx) {
     super(lx);
 
     addParameter(mapIndex);
+    addParameter(blur);
 
     if (worldMaps[0] == null) {
       worldMaps[0] = new BlueMarbleWorldMap(lx);
@@ -144,31 +71,235 @@ public class WorldMapPattern extends TSPattern {
         worldMaps[i] = new ImageWorldMap(lx, i);
       }
     }
+
+    blur.addListener(new LXParameterListener() {
+      void onParameterChanged(LXParameter parameter) {
+        worldMaps[mapIndex.getValuei()].setBlur(blur.getValuei());
+      }
+    });
+    mapIndex.addListener(new LXParameterListener() {
+      void onParameterChanged(LXParameter parameter) {
+        worldMaps[mapIndex.getValuei()].setBlur(blur.getValuei());
+      }
+    });
   }
 
   void run(double deltaMs) {
-    for (LED led : model.leds) {
-      if (worldMaps[mapIndex.getValuei()] != null) {
-        setColor(led.index, worldMaps[mapIndex.getValuei()].getColorAtPixel(led.transformedRectTheta, led.rawY));
+    WorldMap worldMap = worldMaps[mapIndex.getValuei()];
+    if (worldMap != null) {
+      for (LED led : model.leds) {
+        setColor(led.index, worldMap.getColorAtPixel(led.transformedRectTheta, led.rawY));
       }
     }
   }
 }
 
-static EarthquakeVisualizer earthquakeVisualizer;
+static List<Earthquake> earthquakes;
 
 public class EarthquakeVisualizerPattern extends TSPattern {
 
+  private final int NUM_VISUALIZERS = 3;
+  private final EarthquakeVisualizerPattern.EarthquakeVisualizer[] earthquakeVisualizers = new EarthquakeVisualizerPattern.EarthquakeVisualizer[NUM_VISUALIZERS];
+
+  private final DiscreteParameter visualizerIndex = new DiscreteParameter("#", 1, 0, NUM_VISUALIZERS);
+
+  private final BasicParameter visualizerPeriod = new BasicParameter("TIME", 2000, 100, 5000);
+  private final BasicParameter hue = new BasicParameter("HUE", 135, 0, 360);
+  private final DiscreteParameter blur = new DiscreteParameter("BLUR", 0, 0, 10);
+
   EarthquakeVisualizerPattern(LX lx) {
     super(lx);
-    if (earthquakeVisualizer == null) {
-      earthquakeVisualizer = new EarthquakeVisualizer(lx);
+
+    addParameter(visualizerIndex);
+    addParameter(hue);
+    addParameter(visualizerPeriod);
+    addParameter(blur);
+
+    if (earthquakes == null) {
+      WMSConnection wmsConnection = new WMSConnection();
+      earthquakes = wmsConnection.getEarthquakes();
     }
+    if (earthquakeVisualizers[0] == null) {
+      earthquakeVisualizers[0] = new PulseEarthquakeVisualizer(lx, earthquakes);
+
+      for (int i = 1; i < NUM_VISUALIZERS; i++) {
+        earthquakeVisualizers[i] = new ImageEarthquakeVisualizer(lx, earthquakes, i);
+      }
+    }
+
+    blur.addListener(new LXParameterListener() {
+      void onParameterChanged(LXParameter parameter) {
+        earthquakeVisualizers[visualizerIndex.getValuei()].setBlur(blur.getValuei());
+      }
+    });
+    visualizerIndex.addListener(new LXParameterListener() {
+      void onParameterChanged(LXParameter parameter) {
+        earthquakeVisualizers[visualizerIndex.getValuei()].setBlur(blur.getValuei());
+      }
+    });
   }
 
   void run(double deltaMs) {
-    for (LED led : model.leds) {
-      setColor(led.index, earthquakeVisualizer.getColorAtPixel(led.transformedRectTheta, led.rawY));
+    EarthquakeVisualizer visualizer = earthquakeVisualizers[visualizerIndex.getValuei()];
+    if (visualizer != null) {
+      for (LED led : model.leds) {
+          setColor(led.index, visualizer.getColorAtPixel(led.transformedRectTheta, led.rawY));
+      }
+    }
+  }
+
+  public abstract class EarthquakeVisualizer {
+
+    protected final LX lx;
+
+    protected final List<Earthquake> earthquakes;
+
+    EarthquakeVisualizer(LX lx, List<Earthquake> earthquakes) {
+      this.lx = lx;
+      this.earthquakes = earthquakes;
+    }
+
+    void setBlur(int amount) {}
+
+    abstract int getColorAtPixel(float rectTheta, float y);
+  }
+
+  public class PulseEarthquakeVisualizer extends EarthquakeVisualizer {
+
+    private static final int PULSE_SPEED = 5000;
+    private final QuadraticEnvelope pulseRadius = new QuadraticEnvelope(0, 20, visualizerPeriod);
+    private final QuadraticEnvelope pulseAlpha = new QuadraticEnvelope(2, 0, visualizerPeriod);
+    
+    private static final int outerFade = 10;
+    private static final int innerFade = 5;
+    private static final int dotFade = 10;
+
+    PulseEarthquakeVisualizer(LX lx, List<Earthquake> earthquakes) {
+      super(lx, earthquakes);
+
+      pulseRadius.setEase(QuadraticEnvelope.Ease.OUT);
+      pulseRadius.setLooping(true);
+      lx.addModulator(pulseRadius).start();
+
+      pulseAlpha.setEase(QuadraticEnvelope.Ease.OUT);
+      pulseAlpha.setLooping(true);
+      lx.addModulator(pulseAlpha).start();
+    }
+
+    int getColorAtPixel(float rectTheta, float y) {
+      int pixelColor = LXColor.BLACK;
+
+      float[] distances = new float[earthquakes.size()];
+
+      for (int i = 0; i < earthquakes.size(); i++) {
+        Earthquake earthquake = earthquakes.get(i);
+        float earthquakeRectTheta = earthquake.rectTheta;
+        if (2 * (earthquakeRectTheta - rectTheta) > Model.RECT_THETA_MAX) {
+          earthquakeRectTheta -= Model.RECT_THETA_MAX;
+        } else if (2 * (rectTheta - earthquakeRectTheta) > Model.RECT_THETA_MAX) {
+          earthquakeRectTheta += Model.RECT_THETA_MAX;
+        }
+        float pulseRadiusOffset = max(earthquake.magnitude + dotFade, pulseRadius.getValuef() * earthquake.magnitude);
+        if (abs(earthquakeRectTheta - rectTheta) * Model.XY_DISTANCE_RATIO > pulseRadiusOffset
+          || abs(earthquake.rawY - y) > pulseRadiusOffset) {
+          distances[i] = 10000;
+          continue;
+        }
+        float distance = distances[i] = dist(earthquakeRectTheta * Model.XY_DISTANCE_RATIO, earthquake.rawY, rectTheta * Model.XY_DISTANCE_RATIO, y);
+
+        float pulseDistance = distance - (pulseRadius.getValuef() * earthquake.magnitude - outerFade);
+        float fadeValue;
+        if (pulseDistance >= 0) {
+          fadeValue = max(0, 1 - pulseDistance / outerFade);
+        } else {
+          fadeValue = max(0, 1 + pulseDistance / 100);
+        }
+        int adjustedFadeValue = (int)(100 * fadeValue * pulseAlpha.getValuef());
+        if (adjustedFadeValue > 0) {
+          pixelColor = LXColor.add(pixelColor, lx.hsb(100, 100, adjustedFadeValue));
+        }
+      }
+
+      for (int i = 0; i < earthquakes.size(); i++) {
+        Earthquake earthquake = earthquakes.get(i);
+        float distance = distances[i];
+        if (distance >= 10000) continue;
+
+        float progress = max(0, 1 - max(0, distance - earthquake.magnitude) / dotFade);
+        if (progress > 0) {
+          pixelColor = LXColor.lerp(pixelColor, LXColor.RED, progress);
+        }
+      }
+
+      return pixelColor;
+    }
+  }
+
+  public class ImageEarthquakeVisualizer extends EarthquakeVisualizer {
+
+    protected PImage originalImage;
+    protected PImage indicatorImage;
+
+    private final QuadraticEnvelope radius = new QuadraticEnvelope(0, 20, visualizerPeriod);
+
+    ImageEarthquakeVisualizer(LX lx, List<Earthquake> earthquakes, int index) {
+      super(lx, earthquakes);
+      setImage(loadImage("indicator" + index + ".png"));
+
+      radius.setEase(QuadraticEnvelope.Ease.OUT);
+      radius.setLooping(true);
+      lx.addModulator(radius).start();
+    }
+
+    void setImage(PImage image) {
+      originalImage = image;
+      indicatorImage = originalImage.get();
+    }
+
+    void setBlur(int amount) {
+      indicatorImage = originalImage.get();
+      indicatorImage.filter(BLUR, amount);
+    }
+
+    int getColorAtPixel(float rectTheta, float y) {
+      int pixelColor = LXColor.BLACK;
+
+      if (indicatorImage == null) return pixelColor;
+
+      for (int i = 0; i < earthquakes.size(); i++) {
+        Earthquake earthquake = earthquakes.get(i);
+        float earthquakeRectTheta = earthquake.rectTheta;
+        float earthquakeRawY = earthquake.rawY;
+
+        // adjust earthquakeRectTheta to be on the same plane as rectTheta
+        if (2 * (earthquakeRectTheta - rectTheta) > Model.RECT_THETA_MAX) {
+          earthquakeRectTheta -= Model.RECT_THETA_MAX;
+        } else if (2 * (rectTheta - earthquakeRectTheta) > Model.RECT_THETA_MAX) {
+          earthquakeRectTheta += Model.RECT_THETA_MAX;
+        }
+
+        float currentPulseRadius = radius.getValuef() * earthquake.magnitude;
+
+        // bounding box
+        if (abs(earthquakeRectTheta - rectTheta) * Model.XY_DISTANCE_RATIO > currentPulseRadius
+          || abs(earthquakeRawY - y) > currentPulseRadius) {
+          continue;
+        }
+
+        float startX = earthquakeRectTheta * Model.XY_DISTANCE_RATIO - currentPulseRadius;
+        float startY = earthquakeRawY - currentPulseRadius;
+
+        // System.out.println("startX: "+startX + ", startY: "+startY);
+
+        int mapX = (int)map(rectTheta * Model.XY_DISTANCE_RATIO, startX, startX + 2 * currentPulseRadius, 0, indicatorImage.width) % indicatorImage.width;
+        int mapY = (int)map(y, startY, startY + 2 * currentPulseRadius, 0, indicatorImage.height) % indicatorImage.height;
+        int colr = indicatorImage.get(mapX, mapY);
+        float brightness = 100 * (colr & 255) / 255;
+
+        pixelColor = LXColor.add(pixelColor, lx.hsb(EarthquakeVisualizerPattern.this.hue.getValuef(), 100, brightness));
+      }
+
+      return pixelColor;
     }
   }
 }
