@@ -373,8 +373,8 @@ public class WMSConnection {
     try {
       // URL url = new URL("http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson");
       // URL url = new URL("http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson");
-      // URL url = new URL("http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson");
-      URL url = new URL("http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_hour.geojson");
+      URL url = new URL("http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson");
+//      URL url = new URL("http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_hour.geojson");
       in = new BufferedReader(new InputStreamReader(url.openStream()));
       FeatureJSON featureJSON = new FeatureJSON();
       earthquakeFeatureCollection = featureJSON.readFeatureCollection(in);
