@@ -466,7 +466,7 @@ abstract class Engine {
     for (int i = 0; i < Engine.NUM_CHANNELS; ++i) {
       LXChannel channel = lx.engine.addChannel(getPatternListForChannels());
       setupChannel(channel, true);
-      if (i == 0 || i == 1) {
+      if (i == 0) {
         channel.getFader().setValue(1);
       }
       channel.goIndex(i);
