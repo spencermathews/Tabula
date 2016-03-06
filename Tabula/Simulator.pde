@@ -1,5 +1,5 @@
 public class SimulatorCamera extends UI3dContext {
-  public SimulatorCamera(P2LX lx, UI ui) {
+  public SimulatorCamera(P3LX lx, UI ui) {
     super(ui);
 
     setRadius(100*Model.FEET);
@@ -28,13 +28,13 @@ public class LightsSimulator extends UI3dComponent {
   color[] previewBuffer;
   color[] black;
 
-  P2LX lx;
+  P3LX lx;
   Model model;
 
   PShape building;
   PShape fins;
   
-  LightsSimulator(P2LX lx) {
+  LightsSimulator(P3LX lx) {
     this.lx = lx;
     this.model = (Model)lx.model;
 

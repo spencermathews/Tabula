@@ -10,10 +10,10 @@ import heronarts.lx.transition.*;
 import heronarts.lx.midi.*;
 import heronarts.lx.modulator.*;
 
-import heronarts.p2lx.*;
-import heronarts.p2lx.ui.*;
-import heronarts.p2lx.ui.component.*;
-import heronarts.p2lx.ui.control.*;
+import heronarts.p3lx.*;
+import heronarts.p3lx.ui.*;
+import heronarts.p3lx.ui.component.*;
+import heronarts.p3lx.ui.control.*;
 
 import ddf.minim.*;
 import processing.opengl.*;
@@ -40,7 +40,7 @@ final static float CHAIN = -12*Geometry.INCHES;
 final static float BOLT = 22*Geometry.INCHES;
 
 Model model;
-P2LX lx;
+P3LX lx;
 ProcessingEngine engine;
 BasicParameter outputBrightness;
 UIChannelFaders uiFaders;
@@ -53,11 +53,11 @@ LXListenableNormalizedParameter[] effectKnobParameters;
 BooleanParameter[] previewChannels;
 // EarthquakeMap earthquakeMap;
 
+void settings() {
+  size(1148, 720, OPENGL);
+}
 
 void setup() {
-  size(1148, 720, OPENGL);
-  frameRate(90); // this will get processing 2 to actually hit around 60
-  
   engine = new ProcessingEngine(dataPath(""));
   engine.start();
 }
@@ -69,11 +69,11 @@ class ProcessingEngine extends Engine {
   }
 
   LX createLX() {
-    return new P2LX(Tabula.this, model);
+    return new P3LX(Tabula.this, model);
   }
 
-  P2LX getLX() {
-    return (P2LX)lx;
+  P3LX getLX() {
+    return (P3LX)lx;
   }
 
   void configureLX(LX lx) {
