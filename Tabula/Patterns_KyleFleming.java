@@ -990,10 +990,10 @@ class RotationEffect extends ModelTransform {
 
 class SpinEffect extends ModelTransform {
   
-  final BasicParameter spin = new BasicParameter("SPIN", 0.5);
+  final BasicParameter spin = new BasicParameter("SPIN");
   final FunctionalParameter rotationPeriodMs = new FunctionalParameter() {
     public double getValue() {
-      return 119000 - 118000 * spin.getValue();
+      return 119000 - 119000 * spin.getValue();
     }
   };
   final SawLFO rotation = new SawLFO(360, 0, rotationPeriodMs);
