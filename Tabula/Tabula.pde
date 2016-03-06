@@ -58,8 +58,6 @@ void settings() {
 }
 
 void setup() {
-  frameRate(90); // this will get processing 2 to actually hit around 60
-  
   engine = new ProcessingEngine(dataPath(""));
   engine.start();
 }
