@@ -1,3 +1,28 @@
+public abstract class EarthquakePattern extends TSPattern {
+
+  static final int CANVAS_WIDTH = (int)(Model.NUM_LEDS_X * Model.DISTANCE_BETWEEN_FINS);
+  static final int CANVAS_HEIGHT = (int)(Model.NUM_LEDS_Y * Model.DISTANCE_BETWEEN_LEDS);
+
+  public EarthquakePattern(LX lx) {
+    super(lx);
+  }
+
+  PGraphics getGraphics() {
+    PGraphics pg = createGraphics(CANVAS_WIDTH, CANVAS_HEIGHT);
+    pg.beginDraw();
+    return pg;
+  }
+
+  void drawGraphics(PGraphics pg) {
+    pg.endDraw();
+    for (LED led : model.leds) {
+      int mapX = (int)map(led.transformedRectTheta, 0, Model.RECT_THETA_MAX, 0, pg.width) % pg.width;
+      int mapY = (int)(pg.height - led.rawY - 1);
+      setColor(led.index, pg.get(mapX, mapY));
+    }
+  }
+}
+
 public abstract class WorldMap {
 
   static final int IMAGE_WIDTH = 600;
