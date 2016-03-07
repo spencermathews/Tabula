@@ -665,3 +665,22 @@ class UIBeatIndicator extends UI2dComponent implements LXParameterListener {
   }
 }
 
+class DebugImageWindow extends UIWindow {
+
+  DebugImageWindow(UI ui) {
+    super(ui, "", 0, 0, EarthquakePattern.CANVAS_WIDTH / 10.0, EarthquakePattern.CANVAS_HEIGHT / 10.0);
+  }
+
+  @Override
+  public void onDraw(UI ui, PGraphics pg) {
+    LXPattern pattern = lx.getPattern();
+    if (pattern instanceof EarthquakePattern) {
+      EarthquakePattern ePattern = (EarthquakePattern)pattern;
+      if (ePattern.pGraphics != null) {
+        pg.image(ePattern.pGraphics, 0, 0, width, height);
+      }
+    }
+    redraw();
+  }
+}
+

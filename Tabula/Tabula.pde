@@ -135,6 +135,7 @@ void configureUI() {
   // );
 
   lx.ui.addLayer(new SimulatorCamera(lx, lx.ui));
+  lx.ui.addLayer(new DebugImageWindow(((P3LX)lx).ui));
   // lx.ui.addLayer(new MapWindow(lx.ui, earthquakeMap));
   // lx.ui.addLayer(new MapWindowRatio(lx.ui, earthquakeMap));
 
