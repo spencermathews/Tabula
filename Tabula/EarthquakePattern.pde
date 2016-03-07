@@ -3,14 +3,22 @@ public abstract class EarthquakePattern extends TSPattern {
   static final int CANVAS_WIDTH = (int)(Model.NUM_LEDS_X * Model.DISTANCE_BETWEEN_FINS);
   static final int CANVAS_HEIGHT = (int)(Model.NUM_LEDS_Y * Model.DISTANCE_BETWEEN_LEDS);
 
+  PGraphics pGraphics;
+
   public EarthquakePattern(LX lx) {
     super(lx);
   }
 
   PGraphics getGraphics() {
-    PGraphics pg = createGraphics(CANVAS_WIDTH, CANVAS_HEIGHT);
-    pg.beginDraw();
-    return pg;
+    if (pGraphics == null) {
+      pGraphics = createGraphics(CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+    pGraphics.beginDraw();
+    return pGraphics;
+  }
+
+  void drawGraphics() {
+    drawGraphics(pGraphics);
   }
 
   void drawGraphics(PGraphics pg) {
